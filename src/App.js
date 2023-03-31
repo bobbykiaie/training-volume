@@ -1,3 +1,4 @@
+// App.js
 import React, { useState } from 'react';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './components/Login';
@@ -30,7 +31,7 @@ const App = () => {
           path="/"
           element={
             isLoggedIn ? (
-              <BottomNavigationTabs addWorkoutTime={addWorkoutTime} />
+              <BottomNavigationTabs addWorkoutTime={addWorkoutTime} workoutTimes={workoutTimes} />
             ) : (
               <Navigate to="/login" />
             )
