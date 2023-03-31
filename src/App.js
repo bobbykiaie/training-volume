@@ -1,25 +1,45 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import Login from './components/Login';
+import MainScreen from './components/MainScreen';
+import ChartScreen from './components/ChartScreen';
+import BottomNavigationTabs from './components/BottomNavigationTabs';
 
-function App() {
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
+  const [workoutTimes, setWorkoutTimes] = useState([]);
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
+  const addWorkoutTime = (time) => {
+    setWorkoutTimes([...workoutTimes, time]);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={isLoggedIn ? <Navigate to="/" /> : <Login onLogin={handleLogin} />} />
+        <Route
+          path="/"
+          element={
+            isLoggedIn ? (
+              <BottomNavigationTabs addWorkoutTime={addWorkoutTime} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route path="/chart" element={<ChartScreen workoutTimes={workoutTimes} />} />
+      </Routes>
+    </BrowserRouter>
   );
-}
+};
 
 export default App;
