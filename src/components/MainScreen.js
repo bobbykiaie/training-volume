@@ -3,14 +3,16 @@ import { Button, Typography, Collapse } from '@mui/material';
 import CreateRoutineModal from './CreateRoutineModal';
 import AddWorkoutModal from './AddWorkoutModal';
 import WorkoutCard from './WorkoutCard';
-import db from '../firebase';
-import { collection, onSnapshot, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { db, auth } from '../firebase';
+import { collection, onSnapshot, addDoc, updateDoc, doc, query, where } from 'firebase/firestore';
+import { useNavigate, Navigate } from 'react-router-dom';
 
-const MainScreen = ({ onWorkoutOpen }) => {
+const MainScreen = ({ onWorkoutOpen, user }) => {
   const [showCreateRoutineModal, setShowCreateRoutineModal] = useState(false);
   const [showAddWorkoutModal, setShowAddWorkoutModal] = useState(false);
   const [currentRoutineIndex, setCurrentRoutineIndex] = useState(null);
   const [routines, setRoutines] = useState([]);
+  const navigate = useNavigate();
 
   const handleClick = () => {
     onWorkoutOpen();
@@ -21,7 +23,8 @@ const MainScreen = ({ onWorkoutOpen }) => {
   };
 
   const handleRoutineSave = async (routineName) => {
-    const newRoutine = { name: routineName, workouts: [] };
+    const newRoutine = { name: routineName, workouts: [], uid: user.uid };
+
     const routineRef = await addDoc(collection(db, 'routines'), newRoutine);
     setRoutines([...routines, { id: routineRef.id, ...newRoutine }]);
   };
@@ -45,15 +48,24 @@ const MainScreen = ({ onWorkoutOpen }) => {
   };
   
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'routines'), (snapshot) => {
-      const fetchedRoutines = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setRoutines(fetchedRoutines);
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+    if (user) {
+      const userRoutinesCollection = collection(db, 'routines');
+      const userRoutinesQuery = query(userRoutinesCollection, where('uid', '==', user.uid));
+      const unsubscribe = onSnapshot(userRoutinesQuery, (snapshot) => {
+        const fetchedRoutines = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setRoutines(fetchedRoutines);
+      });
+      return () => {
+        unsubscribe();
+      };
+    }
+  }, [user]);
 
+  const handleLogout = async () => {
+    await auth.signOut();
+    navigate('/login');
+    <Navigate to="/login" />
+  }
   return (
     <div style={{ padding: '16px' }}>
       <Typography variant="h4" component="h2" style={{ marginBottom: '16px' }}>
@@ -117,9 +129,17 @@ const MainScreen = ({ onWorkoutOpen }) => {
         onSave={handleWorkoutSave}
         routines={routines}
         currentRoutineIndex={currentRoutineIndex}
-        />
-        </div>
-      );
-    };
+      />
+      <Button
+        variant="outlined"
+        color="secondary"
+        sx={{ position: 'absolute', top: 10, right: 10 }}
+        onClick={handleLogout}
+      >
+        Logout
+      </Button>
+    </div>
+  );
+                  };  
 
     export default MainScreen;

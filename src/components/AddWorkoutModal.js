@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, TextField, Button, Typography } from '@mui/material';
 import AddExerciseModal from './AddExerciseModal';
-import db from '../firebase';
+import { db } from '../firebase';
 import { collection, onSnapshot, addDoc, updateDoc, doc } from 'firebase/firestore';
 
 

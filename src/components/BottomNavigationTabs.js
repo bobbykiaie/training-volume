@@ -16,7 +16,7 @@ const StyledBottomNavigation = styled(BottomNavigation)({
   zIndex: 950,
 });
 
-const BottomNavigationTabs = ({ addWorkoutTime, workoutTimes }) => {
+const BottomNavigationTabs = ({ addWorkoutTime, workoutTimes, user }) => {
   const [value, setValue] = useState(0);
   const [workoutActive, setWorkoutActive] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -40,15 +40,16 @@ const BottomNavigationTabs = ({ addWorkoutTime, workoutTimes }) => {
   const getCurrentTab = () => {
     switch (value) {
       case 0:
-        return <MainScreen onWorkoutOpen={handleWorkoutOpen} />;
+        return <MainScreen onWorkoutOpen={handleWorkoutOpen} user={user} />;
       case 1:
         return <ChartScreen workoutTimes={workoutTimes} />;
       case 2:
         return <Workout onClose={handleWorkoutClose} onEndWorkout={EndWorkout} />;
       default:
-        return <MainScreen onWorkoutOpen={handleWorkoutOpen} />;
+        return <MainScreen onWorkoutOpen={handleWorkoutOpen} user={user} />;
     }
   };
+  
 
   return (
     <WorkoutContext.Provider value={{ elapsedTime, setElapsedTime }}>
