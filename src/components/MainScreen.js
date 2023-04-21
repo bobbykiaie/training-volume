@@ -14,9 +14,12 @@ const MainScreen = ({ onWorkoutOpen, user }) => {
   const [routines, setRoutines] = useState([]);
   const navigate = useNavigate();
 
-  const handleClick = () => {
-    onWorkoutOpen();
+  const handleClick = (workout) => {
+    console.log(workout.name);
+    onWorkoutOpen(workout);
   };
+  
+
 
   const handleCreateRoutineClick = () => {
     setShowCreateRoutineModal(true);
@@ -41,11 +44,13 @@ const MainScreen = ({ onWorkoutOpen, user }) => {
   const handleWorkoutSave = async (workout) => {
     const routineId = routines[currentRoutineIndex].id;
     const routineRef = doc(db, 'routines', routineId);
+    const updatedWorkout = { ...workout, exercises: workout.exercises || [] };
     await updateDoc(routineRef, {
-      workouts: [...routines[currentRoutineIndex].workouts, workout]
+      workouts: [...routines[currentRoutineIndex].workouts, updatedWorkout]
     });
     setShowAddWorkoutModal(false);
   };
+  
   
   useEffect(() => {
     if (user) {
@@ -54,6 +59,7 @@ const MainScreen = ({ onWorkoutOpen, user }) => {
       const unsubscribe = onSnapshot(userRoutinesQuery, (snapshot) => {
         const fetchedRoutines = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setRoutines(fetchedRoutines);
+        console.log(fetchedRoutines)
       });
       return () => {
         unsubscribe();
@@ -71,6 +77,7 @@ const MainScreen = ({ onWorkoutOpen, user }) => {
       <Typography variant="h4" component="h2" style={{ marginBottom: '16px' }}>
         Start Workout
       </Typography>
+     
       <Button
         variant="contained"
         color="primary"
@@ -101,10 +108,25 @@ const MainScreen = ({ onWorkoutOpen, user }) => {
                 No exercise days created yet.
               </Typography>
             ) : (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginLeft: '16px', marginBottom: '8px' }}>
-                  {routine.workouts.map((workout, workoutIndex) => (
-                    <WorkoutCard key={workoutIndex} workout={workout} />
-                  ))}
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  justifyContent: 'space-between',
+                  marginLeft: '16px',
+                  marginBottom: '8px',
+                }}>
+                  {console.log(routine.workouts)}
+                {routine.workouts.map((workout, workoutIndex) => (
+                  
+  <WorkoutCard
+    key={workoutIndex}
+    workout={workout}
+    onWorkoutOpen={() => handleClick(workout)}
+  />
+   
+ 
+))}
+
                 </div>
               )}
               <Button

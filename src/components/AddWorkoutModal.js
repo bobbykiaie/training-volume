@@ -61,13 +61,16 @@ const AddWorkoutModal = ({ open, onClose, onSave, routines,currentRoutineIndex }
                 Add Exercises
             </Button>
             {exercises.map((exercise, index) => (
-                <div key={index}>
-                    <Typography variant="h6">{exercise.name}</Typography>
-                    <Typography variant="body1">
-                        {exercise.sets} sets x {exercise.reps} reps
-                    </Typography>
-                </div>
-            ))}
+  <div key={index}>
+    <Typography variant="h6">{exercise.name?.name}</Typography>
+<Typography variant="subtitle2">{exercise.name?.primary_muscle}</Typography>
+
+    <Typography variant="body1">
+      {exercise.sets} sets x {exercise.reps} reps
+    </Typography>
+  </div>
+))}
+
             <AddExerciseModal
                 open={showAddExerciseModal}
                 onClose={() => setShowAddExerciseModal(false)}
