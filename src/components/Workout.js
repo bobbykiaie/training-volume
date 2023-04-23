@@ -2,9 +2,11 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { SwipeableDrawer } from "@mui/material";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { styled } from "@mui/material/styles";
 import WorkoutContext from "../context";
-import exerciseList from "./exerciseList"; // Import exerciseList
+import exerciseList from "./exerciseList";
 
 const StyledSwipeableDrawer = styled(SwipeableDrawer)({
   "& .MuiDrawer-paper": {
@@ -23,14 +25,14 @@ const Workout = ({
   const { elapsedTime, setElapsedTime } = useContext(WorkoutContext);
   const startTimeRef = useRef(Date.now());
   const [exerciseSets, setExerciseSets] = useState(
-    workout.exercises.map((exercise) => [{ weight: "", reps: "" }])
+    workout.exercises.map((exercise) => [{ weight: "", reps: "", completed: false }])
   );
 
   const [muscleSets, setMuscleSets] = useState(() => {
     const initialMuscleSets = {};
     workout.exercises.forEach((exercise) => {
       const muscle = exercise.name.primary_muscle;
-      initialMuscleSets[muscle] = (initialMuscleSets[muscle] || 0) + 1;
+      initialMuscleSets[muscle] = 0;
     });
     return initialMuscleSets;
   });
@@ -63,12 +65,29 @@ const Workout = ({
   const addSet = (exerciseIndex) => {
     setExerciseSets((prevSets) => {
       const newSets = [...prevSets];
-      newSets[exerciseIndex] = [...newSets[exerciseIndex], { weight: "", reps: "" }];
+      newSets[exerciseIndex] = [...newSets[exerciseIndex], { weight: "", reps: "", completed: false }];
       return newSets;
     });
+  };
 
+  const toggleSetCompletion = (exerciseIndex, setIndex) => {
+    setExerciseSets((prevSets) => {
+      const newSets = [...prevSets];
+      const set = newSets[exerciseIndex][setIndex];
+      if (set.weight && set.reps) {
+        set.completed = !set.completed;
+        updateMuscleSets(set.completed, exerciseIndex);
+      }
+      return newSets;
+    });
+  };
+
+  const updateMuscleSets = (completed, exerciseIndex) => {
     const muscle = workout.exercises[exerciseIndex].name.primary_muscle;
-    setMuscleSets((prevSets) => ({ ...prevSets, [muscle]: prevSets[muscle] + 1 }));
+    setMuscleSets((prevSets) => {
+      const change = completed ? 1 : -1;
+      return { ...prevSets, [muscle]: prevSets[muscle] + change };
+    });
   };
 
   return (
@@ -81,18 +100,19 @@ const Workout = ({
           padding: "16px",
         }}
       >
-        <div
+               <div
           style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "16px" }}
         >
           {workout.name}
         </div>
         {workout.exercises.map((exercise, index) => (
-          <div key={index}>
-            <div style={{ fontSize: "16px", marginBottom: "8px" }}>
-              {exercise.name.name} - {exercise.name.primary_muscle}
-            </div>
+          <div
+            key={index}
+            style={{ fontSize: "16px", marginBottom: "8px", textAlign: "center" }}
+          >
+            {exercise.name.name} - {exercise.name.primary_muscle}
             {exerciseSets[index].map((set, setIndex) => (
-              <div key={setIndex} style={{ display: "flex", marginBottom: "8px" }}>
+              <div key={setIndex} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
                 <TextField
                   label="Weight"
                   value={set.weight}
@@ -117,7 +137,21 @@ const Workout = ({
                       return newSets;
                     });
                   }}
+                  style={{ marginRight: "8px" }}
                 />
+                {set.completed ? (
+                  <CheckCircleIcon
+                    color="primary"
+                    onClick={() => toggleSetCompletion(index, setIndex)}
+                    style={{ cursor: "pointer" }}
+                  />
+                ) : (
+                  <CheckCircleOutlineIcon
+                    color="primary"
+                    onClick={() => toggleSetCompletion(index, setIndex)}
+                    style={{ cursor: "pointer" }}
+                  />
+                )}
               </div>
             ))}
             <Button
@@ -170,7 +204,7 @@ const Workout = ({
           Minimize
         </Button>
       </div>
-    </StyledSwipeableDrawer>
+      </StyledSwipeableDrawer>
   );
 };
 
